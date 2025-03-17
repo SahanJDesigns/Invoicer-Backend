@@ -31,6 +31,9 @@ app.use("/api/products", productRoutes)
 
 // Error handling middleware
 app.use(errorHandler)
+app.get("/", (req, res) => {
+  res.send("Hello World!")
+})
 
 // Connect to MongoDB
 mongoose
