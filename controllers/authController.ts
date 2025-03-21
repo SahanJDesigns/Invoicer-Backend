@@ -37,6 +37,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       },
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -80,6 +81,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       },
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -100,6 +102,7 @@ export const getCurrentUser = async (req: Request, res: Response, next: NextFunc
       },
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }

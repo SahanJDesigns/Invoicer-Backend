@@ -60,6 +60,7 @@ export const createBill = async (req: Request, res: Response, next: NextFunction
       data: bill,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -98,6 +99,7 @@ export const getAllBills = async (req: Request, res: Response, next: NextFunctio
       }
     )
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -116,6 +118,7 @@ export const getBill = async (req: Request, res: Response, next: NextFunction) =
       data: bill,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -140,6 +143,7 @@ export const updateBillStatus = async (req: Request, res: Response, next: NextFu
       data: bill,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -165,6 +169,7 @@ export const deleteBill = async (req: Request, res: Response, next: NextFunction
       data: {},
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -186,6 +191,7 @@ export const getBillsByShop = async (req: Request, res: Response, next: NextFunc
       }
     )
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -208,6 +214,7 @@ export const getBillsByDoctor = async (req: Request, res: Response, next: NextFu
     )
 
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -229,6 +236,7 @@ export const getBillByInvoice = async (req: Request, res: Response, next: NextFu
     )
 
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -272,6 +280,7 @@ export const addBillPayement = async (req: Request, res: Response, next: NextFun
       data: bill,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }

@@ -28,6 +28,7 @@ export const createShop = async (req: Request, res: Response, next: NextFunction
       data: shop,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -43,6 +44,7 @@ export const getAllShops = async (req: Request, res: Response, next: NextFunctio
       data: shops,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -61,6 +63,7 @@ export const getShop = async (req: Request, res: Response, next: NextFunction) =
       data: shop,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -85,6 +88,7 @@ export const updateShop = async (req: Request, res: Response, next: NextFunction
       data: shop,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -103,6 +107,7 @@ export const deleteShop = async (req: Request, res: Response, next: NextFunction
       data: {},
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -135,6 +140,7 @@ export const searchShops = async (req: Request, res: Response, next: NextFunctio
       data: shops,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }

@@ -19,6 +19,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
       data: product,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -44,6 +45,7 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
       data: products,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -62,6 +64,7 @@ export const getProduct = async (req: Request, res: Response, next: NextFunction
       data: product,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -86,6 +89,7 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
       data: product,
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
@@ -104,6 +108,7 @@ export const deleteProduct = async (req: Request, res: Response, next: NextFunct
       data: {},
     })
   } catch (error) {
+    console.log(error)
     next(error)
   }
 }
