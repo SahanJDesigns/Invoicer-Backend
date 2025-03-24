@@ -8,10 +8,11 @@ import mongoose from "mongoose"
 // Create a new bill
 export const createBill = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    
     const { shopId, products } = req.body
-
+    
     // Validate shop
-    console.log(shopId)
+    console.log(`User:${req.userId} is trying to Create a Biil for Shop:${shopId} with products:${products}`)
     const shop = await Shop.findById(shopId)
     if (!shop) {
       throw new ApiError(404, "Shop not found")
@@ -54,13 +55,13 @@ export const createBill = async (req: Request, res: Response, next: NextFunction
       totalAmount,
       createdBy: req.userId,
     })
-
+    console.log(`Bill successfully created for Shop:${shopId} with products:${products}`)
     res.status(201).json({
       success: true,
       data: bill,
     })
   } catch (error) {
-    console.log(error)
+    console.log(`Bill creation failed for Shop:${req.body.shopId}, products:${req.body.products} with error:${error}`)
     next(error)
   }
 }
@@ -69,7 +70,7 @@ export const createBill = async (req: Request, res: Response, next: NextFunction
 export const getAllBills = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { status, shopId, search } = req.query
-
+    console.log(`User:${req.userId} is trying to get all bills with status:${status}, shopId:${shopId}, search:${search}`)
     // Build query
     const query: any = {}
 
@@ -90,7 +91,7 @@ export const getAllBills = async (req: Request, res: Response, next: NextFunctio
     }
 
     const bills = await Bill.find(query).sort({ date: -1 }).populate("createdBy", "name")
-
+    console.log(`User:${req.userId} successfully got all bills with status:${status}, shopId:${shopId}, search:${search}`)
     res.status(200).json(
       {
         success: true,
@@ -99,7 +100,7 @@ export const getAllBills = async (req: Request, res: Response, next: NextFunctio
       }
     )
   } catch (error) {
-    console.log(error)
+    console.log(`User:${req.userId} failed to get all bills with error:${req.query.status} for shopId:${req.query.shopId}, search:${req.query.search}`)
     next(error)
   }
 }
@@ -108,7 +109,7 @@ export const getAllBills = async (req: Request, res: Response, next: NextFunctio
 export const getBill = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const bill = await Bill.findById(req.params.id).populate("createdBy", "name").populate("shop")
-
+    console.log(`User:${req.userId} is trying to get bill with ID:${req.params.id}`)
     if (!bill) {
       throw new ApiError(404, "Bill not found")
     }
@@ -117,8 +118,9 @@ export const getBill = async (req: Request, res: Response, next: NextFunction) =
       success: true,
       data: bill,
     })
+    console.log(`User:${req.userId} successfully got bill with ID:${req.params.id}`)
   } catch (error) {
-    console.log(error)
+    console.log(`User:${req.userId} failed to get bill with ID:${req.params.id} with error:${error}`)
     next(error)
   }
 }
@@ -127,7 +129,7 @@ export const getBill = async (req: Request, res: Response, next: NextFunction) =
 export const updateBillStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { status } = req.body
-
+    console.log(`User:${req.userId} is trying to update bill status with ID:${req.params.id} to status:${status}`)
     if (!status || (status !== "Paid" && status !== "Unpaid")) {
       throw new ApiError(400, "Please provide a valid status (Paid or Unpaid)")
     }
@@ -137,12 +139,13 @@ export const updateBillStatus = async (req: Request, res: Response, next: NextFu
     if (!bill) {
       throw new ApiError(404, "Bill not found")
     }
-
+    console.log(`User:${req.userId} successfully updated bill status with ID:${req.params.id} to status:${status}`)
     res.status(200).json({
       success: true,
       data: bill,
     })
   } catch (error) {
+    console.log(`User:${req.userId} failed to update bill status with ID:${req.params.id} to status:${req.body.status} with error:${error}`)
     console.log(error)
     next(error)
   }
@@ -152,7 +155,7 @@ export const updateBillStatus = async (req: Request, res: Response, next: NextFu
 export const deleteBill = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const bill = await Bill.findById(req.params.id)
-
+    console.log(`User:${req.userId} is trying to delete bill with ID:${req.params.id}`)
     if (!bill) {
       throw new ApiError(404, "Bill not found")
     }
@@ -163,13 +166,13 @@ export const deleteBill = async (req: Request, res: Response, next: NextFunction
     }
 
     await bill.deleteOne()
-
+    console.log(`User:${req.userId} successfully deleted bill with ID:${req.params.id}`)
     res.status(200).json({
       success: true,
       data: {},
     })
   } catch (error) {
-    console.log(error)
+    console.log(`User:${req.userId} failed to delete bill with ID:${req.params.id} with error:${error}`)
     next(error)
   }
 }
@@ -178,11 +181,11 @@ export const deleteBill = async (req: Request, res: Response, next: NextFunction
 export const getBillsByShop = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { shopName } = req.params
-    console.log(shopName)
+    console.log(`User:${req.userId} is trying to get bills by shop with shopName:${shopName}`)
     const query: any = { shopName: { $regex: shopName, $options: "i" } }
 
     const bills = await Bill.find(query).sort({ date: -1 }).populate("createdBy", "name")
-
+    console.log(`User:${req.userId} successfully got bills by shop with shopName:${shopName}`)
     res.status(200).json( 
       {
         success: true,
@@ -191,20 +194,21 @@ export const getBillsByShop = async (req: Request, res: Response, next: NextFunc
       }
     )
   } catch (error) {
-    console.log(error)
+    console.log(`User:${req.userId} failed to get bills by shop with shopName:${req.params.shopName} with error:${error}`)
     next(error)
   }
 }
 
 export const getBillsByDoctor = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.log(`User:${req.userId} is trying to get bills by doctor with doctorName:${req.params.doctor}`)
     const { doctor } = req.params
 
     const query: any = { doctorName: { $regex: doctor, $options: "i" } }
 
 
     const bills = await Bill.find(query).sort({ date: -1 }).populate("createdBy", "name")
-
+    console.log(`User:${req.userId} successfully got bills by doctor with doctorName:${req.params.doctor}`)
     res.status(200).json(
       {
         success: true,
@@ -214,19 +218,20 @@ export const getBillsByDoctor = async (req: Request, res: Response, next: NextFu
     )
 
   } catch (error) {
-    console.log(error)
+    console.log(`User:${req.userId} failed to get bills by doctor with doctorName:${req.params.doctor} with error:${error}`)
     next(error)
   }
 }
 
 export const getBillByInvoice = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.log(`User:${req.userId} is trying to get bill by invoice with invoiceNumber:${req.params.invoice}`)
     const { invoice } = req.params
     const query: any = { invoiceNumber: { $regex: invoice, $options: "i" } }
 
 
     const bills = await Bill.find(query).sort({ date: -1 }).populate("createdBy", "name")
-
+    console.log(`User:${req.userId} successfully got bill by invoice with invoiceNumber:${req.params.invoice}`)
     res.status(200).json(
       {
         success: true,
@@ -236,7 +241,7 @@ export const getBillByInvoice = async (req: Request, res: Response, next: NextFu
     )
 
   } catch (error) {
-    console.log(error)
+    console.log(`User:${req.userId} failed to get bill by invoice with invoiceNumber:${req.params.invoice} with error:${error}`)
     next(error)
   }
 }
@@ -244,9 +249,8 @@ export const getBillByInvoice = async (req: Request, res: Response, next: NextFu
 export const addBillPayement = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { amount } = req.body
-    console.log(req.userId)
-    console.log(req.params.id)
     const user = req.user
+    console.log(`User:${req.userId} is trying to add payment to bill with ID:${req.params.id} with amount:${amount}`)
     if (!amount || amount <= 0) {
       throw new ApiError(400, "Please provide a valid amount")
     }
@@ -263,7 +267,7 @@ export const addBillPayement = async (req: Request, res: Response, next: NextFun
         date: new Date(),
         createdBy: req.userId as unknown as mongoose.Types.ObjectId,
       })}
-      console.log(bill.payments)
+
     bill.currentPayment = bill.payments.reduce((acc, item) => acc + item.amount, 0)
     if (bill.currentPayment > bill.totalAmount) {
       throw new ApiError(400, "Payment amount exceeds total amount")
@@ -274,13 +278,13 @@ export const addBillPayement = async (req: Request, res: Response, next: NextFun
     }
 
     await bill.save()
-
+    console.log(`User:${req.userId} successfully added payment to bill with ID:${req.params.id} with amount:${amount}`)
     res.status(200).json({
       success: true,
       data: bill,
     })
   } catch (error) {
-    console.log(error)
+    console.log(`User:${req.userId} failed to add payment to bill with ID:${req.params.id} with amount:${req.body.amount} with error:${error}`)
     next(error)
   }
 }
