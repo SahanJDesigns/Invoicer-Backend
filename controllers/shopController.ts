@@ -2,7 +2,6 @@ import type { Request, Response, NextFunction } from "express"
 import Shop from "../models/Shop"
 import { ApiError } from "../utils/ApiError"
 
-// Create a new shop
 export const createShop = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { shopName, doctorName, location, contactNumber} = req.body
@@ -32,23 +31,6 @@ export const createShop = async (req: Request, res: Response, next: NextFunction
 
   } catch (error) {
     console.log(`User:${req.userId} failed to Create a Shop with shopName:${req.body.shopName} and doctorName:${req.body.doctorName} with error:${error}`)
-    next(error)
-  }
-}
-
-// Get all shops
-export const getAllShops = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const shops = await Shop.find().sort({ createdAt: -1 })
-    console.log(`User:${req.userId} is trying to get all shops`)
-    res.status(200).json({
-      success: true,
-      count: shops.length,
-      data: shops,
-    })
-    console.log(`User:${req.userId} successfully got all shops`)
-  } catch (error) {
-    console.log(`User:${req.userId} failed to get all shops with error:${error}`)
     next(error)
   }
 }
