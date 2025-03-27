@@ -66,7 +66,7 @@ export const createBill = async (req: Request, res: Response) => {
 }
 
 // Get all bills
-export const searchBills = async (req: Request, res: Response) => {
+export const hhhjh = async (req: Request, res: Response) => {
   try {
     const { status, shopId, search } = req.query
     console.log(`User:${req.userId} is trying to get all bills with status:${status}, shopId:${shopId}, search:${search}`)
@@ -100,6 +100,38 @@ export const searchBills = async (req: Request, res: Response) => {
     )
   } catch (error) {
     console.log(`User:${req.userId} failed to get all bills with error:${req.query.status} for shopId:${req.query.shopId}, search:${req.query.search}`)
+  }
+}
+
+// Search bills
+export const searchBills = async (req: Request, res: Response) => {
+  try {
+    const { query } = req.query
+    console.log(`User:${req.userId} is trying to search bills with query:${query}`)
+    if (!query) {
+      res.status(200).json({
+        success: true,
+        count: 0,
+        data: [],
+      })
+      return
+    }
+
+    const bills = await Bill.find({
+      $or: [
+        { shopName: { $regex: query, $options: "i" } },
+        { doctorName: { $regex: query, $options: "i" } },
+        { invoiceNumber: { $regex: query, $options: "i" } },
+      ],
+    }).sort({ createdAt: -1 })
+    console.log(`User:${req.userId} successfully searched bills with query:${query}`)
+    res.status(200).json({
+      success: true,
+      count: bills.length,
+      data: bills,
+    })
+  } catch (error) {
+    console.log(`User:${req.userId} failed to search bills with query:${req.query} with error:${error}`)
   }
 }
 
