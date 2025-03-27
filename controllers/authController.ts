@@ -43,7 +43,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 }
 
 // Login user
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body
 
@@ -71,7 +71,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     // Generate token
     const token = user.generateAuthToken()
-
+    console.log(`User with UID: ${user._id} successfully logged in`);
     res.status(200).json({
       success: true,
       token,
@@ -83,14 +83,17 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         role: user.role,
       },
     })
-  } catch (error) {
+  } catch (error:any) {
     console.log(error)
-    next(error)
+    res.status(401).json({
+      success: false,
+      message: error.message,
+    }) 
   }
 }
 
 // Get current user
-export const getCurrentUser = async (req: Request, res: Response, next: NextFunction) => {
+export const getCurrentUser = async (req: Request, res: Response) => {
   try {
     const user = req.user
     console.log(`User with UID: ${user?.id} is trying to get current user`);
@@ -106,7 +109,7 @@ export const getCurrentUser = async (req: Request, res: Response, next: NextFunc
     })
   } catch (error) {
     console.log(error)
-    next(error)
+
   }
 }
 
