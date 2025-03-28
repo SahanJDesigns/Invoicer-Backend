@@ -101,7 +101,7 @@ export const deleteShop = async (req: Request, res: Response, next: NextFunction
 }
 
 // Search shops
-export const searchShops = async (req: Request, res: Response, next: NextFunction) => {
+export const searchShops = async (req: Request, res: Response) => {
   try {
     const { query } = req.query
     console.log(`User:${req.userId} is trying to search shops with query:${query}`)
@@ -129,7 +129,6 @@ export const searchShops = async (req: Request, res: Response, next: NextFunctio
     })
   } catch (error) {
     console.log(`User:${req.userId} failed to search shops with query:${req.query.query} with error:${error}`)
-    next(error)
   }
 }
 

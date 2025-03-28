@@ -24,12 +24,7 @@ const ProductSchema = new Schema(
       type: String,
       trim: true,
       maxlength: [500, "Description cannot be more than 500 characters"],
-    },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    }
   },
   { timestamps: true },
 )

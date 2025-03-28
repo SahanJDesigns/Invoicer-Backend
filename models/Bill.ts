@@ -18,11 +18,7 @@ export interface IBill extends Document {
   status: "Paid" | "Unpaid"
   createdBy: mongoose.Types.ObjectId
   date: Date
-  payments: {
-    amount: number
-    date: Date
-    createdBy: mongoose.Types.ObjectId
-  }[]
+  payments:mongoose.Types.ObjectId[]
 }
 
 const BillSchema = new Schema(
@@ -84,19 +80,9 @@ const BillSchema = new Schema(
     },
 
     payments:[{
-      amount: {
-        type: Number,
-        required: true,
-      },
-      date: {
-        type: Date,
-        default: Date.now,
-      },
-      createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Payment",
+      required: true,
     }],
     
     createdBy: {

@@ -5,25 +5,25 @@ import { ApiError } from "../utils/ApiError"
 // Get all products
 export const searchProduct = async (req: Request, res: Response) => {
   try {
-    const { search } = req.query
-    console.log(`User:${req.userId} is trying to get all products with search:${search}`)
-    let query = {}
+    const { query } = req.query
+    console.log(`User:${req.userId} is trying to get all products with search:${query}`)
+    let search = {}
 
-    if (search) {
-      query = {
-        $or: [{ name: { $regex: search, $options: "i" } }, { description: { $regex: search, $options: "i" } }],
+    if (query) {
+      search = {
+        $or: [{ name: { $regex: query, $options: "i" } }, { description: { $regex: query, $options: "i" } }],
       }
     }
 
-    const products = await Product.find(query).sort({ name: 1 })
-    console.log(`User:${req.userId} successfully got all products with search:${search}`)
+    const products = await Product.find(search).sort({ name: 1 })
+    console.log(`User:${req.userId} successfully got all products with search:${query}`)
     res.status(200).json({
       success: true,
       count: products.length,
       data: products,
     })
   } catch (error) {
-    console.log(`User:${req.userId} failed to get all products on search:${req.query.search} with error:${error}`)
+    console.log(`User:${req.userId} failed to get all products on search:${req.query} with error:${error}`)
   }
 }
 

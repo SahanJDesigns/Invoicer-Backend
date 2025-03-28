@@ -4,6 +4,7 @@ import Shop from "../models/Shop"
 import Product from "../models/Product"
 import { ApiError } from "../utils/ApiError"
 import mongoose from "mongoose"
+import Payment from "../models/Payment"
 
 // Create a new bill
 export const createBill = async (req: Request, res: Response) => {
@@ -52,7 +53,10 @@ export const createBill = async (req: Request, res: Response) => {
       shopName: shop.shopName,
       doctorName: shop.doctorName,
       products: productItems,
+      payments: [],
+      status: "Unpaid",
       totalAmount,
+      currentPayment: 0,
       createdBy: req.userId,
     })
     console.log(`Bill successfully created for Shop:${shopId} with products:${products}`)
@@ -62,44 +66,6 @@ export const createBill = async (req: Request, res: Response) => {
     })
   } catch (error) {
     console.log(`Bill creation failed for Shop:${req.body.shopId}, products:${req.body.products} with error:${error}`)
-  }
-}
-
-// Get all bills
-export const hhhjh = async (req: Request, res: Response) => {
-  try {
-    const { status, shopId, search } = req.query
-    console.log(`User:${req.userId} is trying to get all bills with status:${status}, shopId:${shopId}, search:${search}`)
-    // Build query
-    const query: any = {}
-
-    if (status && (status === "Paid" || status === "Unpaid")) {
-      query.status = status
-    }
-
-    if (shopId) {
-      query.shop = shopId
-    }
-
-    if (search) {
-      query.$or = [
-        { shopName: { $regex: search, $options: "i" } },
-        { doctorName: { $regex: search, $options: "i" } },
-        { invoiceNumber: { $regex: search, $options: "i" } },
-      ]
-    }
-
-    const bills = await Bill.find(query).sort({ date: -1 }).populate("createdBy", "name")
-    console.log(`User:${req.userId} successfully got all bills with status:${status}, shopId:${shopId}, search:${search}`)
-    res.status(200).json(
-      {
-        success: true,
-        count: bills.length,
-        data: bills,
-      }
-    )
-  } catch (error) {
-    console.log(`User:${req.userId} failed to get all bills with error:${req.query.status} for shopId:${req.query.shopId}, search:${req.query.search}`)
   }
 }
 
@@ -138,8 +104,8 @@ export const searchBills = async (req: Request, res: Response) => {
 // Get a single bill
 export const getBill = async (req: Request, res: Response) => {
   try {
-    const bill = await Bill.findById(req.params.id).populate("createdBy", "name").populate("shop")
-    console.log(`User:${req.userId} is trying to get bill with ID:${req.params.id}`)
+    const bill = await Bill.findById(req.params.billId).populate("createdBy", "name").populate("shop").populate("payments")
+    console.log(`User:${req.userId} is trying to get bill with ID:${req.params.billId}`)
     if (!bill) {
       throw new ApiError(404, "Bill not found")
     }
@@ -148,9 +114,9 @@ export const getBill = async (req: Request, res: Response) => {
       success: true,
       data: bill,
     })
-    console.log(`User:${req.userId} successfully got bill with ID:${req.params.id}`)
+    console.log(`User:${req.userId} successfully got bill with ID:${req.params.billId}`)
   } catch (error) {
-    console.log(`User:${req.userId} failed to get bill with ID:${req.params.id} with error:${error}`)
+    console.log(`User:${req.userId} failed to get bill with ID:${req.params.billId} with error:${error}`)
   }
 }
 
@@ -158,8 +124,8 @@ export const getBill = async (req: Request, res: Response) => {
 // Delete a bill
 export const deleteBill = async (req: Request, res: Response) => {
   try {
-    const bill = await Bill.findById(req.params.id)
-    console.log(`User:${req.userId} is trying to delete bill with ID:${req.params.id}`)
+    const bill = await Bill.findById(req.params.billId)
+    console.log(`User:${req.userId} is trying to delete bill with ID:${req.params.billId}`)
     if (!bill) {
       throw new ApiError(404, "Bill not found")
     }
@@ -170,7 +136,7 @@ export const deleteBill = async (req: Request, res: Response) => {
     }
 
     await bill.deleteOne()
-    console.log(`User:${req.userId} successfully deleted bill with ID:${req.params.id}`)
+    console.log(`User:${req.userId} successfully deleted bill with ID:${req.params.billId}`)
     res.status(200).json({
       success: true,
       data: {},
@@ -181,43 +147,109 @@ export const deleteBill = async (req: Request, res: Response) => {
 }
 
 export const addBillPayement = async (req: Request, res: Response) => {
+  const session = await mongoose.startSession()
+  session.startTransaction()
+
   try {
     const { amount } = req.body
-    const user = req.user
+
     console.log(`User:${req.userId} is trying to add payment to bill with ID:${req.params.id} with amount:${amount}`)
+
     if (!amount || amount <= 0) {
       throw new ApiError(400, "Please provide a valid amount")
     }
 
-    const bill = await Bill.findById(req.params.id)
+    const payment = await Payment.create([{ 
+      amount, 
+      bill: req.params.billId 
+    }], { session })
+
+    const bill = await Bill.findById(req.params.billId).session(session)
 
     if (!bill) {
       throw new ApiError(404, "Bill not found")
     }
 
-    if (req.userId){
-      bill.payments.push({
-        amount,
-        date: new Date(),
-        createdBy: req.userId as unknown as mongoose.Types.ObjectId,
-      })}
+    bill.payments.push(payment[0]._id as mongoose.Types.ObjectId)
 
-    bill.currentPayment = bill.payments.reduce((acc, item) => acc + item.amount, 0)
+    bill.currentPayment = bill.currentPayment + amount
     if (bill.currentPayment > bill.totalAmount) {
       throw new ApiError(400, "Payment amount exceeds total amount")
-    }else if (bill.totalAmount === bill.currentPayment) {
+    } else if (bill.totalAmount === bill.currentPayment) {
       bill.status = "Paid"
-    }else{
-      bill.currentPayment = bill.totalAmount - bill.currentPayment
     }
 
-    await bill.save()
+    await bill.save({ session })
+    await session.commitTransaction()
+    session.endSession()
+
     console.log(`User:${req.userId} successfully added payment to bill with ID:${req.params.id} with amount:${amount}`)
     res.status(200).json({
       success: true,
       data: bill,
     })
-  } catch (error) {
+  } catch (error: any) {
+    await session.abortTransaction()
+    session.endSession()
     console.log(`User:${req.userId} failed to add payment to bill with ID:${req.params.id} with amount:${req.body.amount} with error:${error}`)
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    })
   }
 }
+
+
+export const deletePayment = async (req: Request, res: Response) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { paymentId } = req.params;
+
+    console.log(`User:${req.userId} is trying to delete payment with ID:${paymentId}`);
+
+    const payment = await Payment.findById(paymentId).session(session) as { _id: mongoose.Types.ObjectId, amount: number, bill: mongoose.Types.ObjectId };
+
+    if (!payment) {
+      throw new ApiError(404, "Payment not found");
+    }
+
+    const bill = await Bill.findById(payment.bill).session(session);
+
+    if (!bill) {
+      throw new ApiError(404, "Associated bill not found");
+    }
+
+    // Remove payment from bill
+    bill.payments = bill.payments.filter(
+      (id) => id.toString() !== (payment._id as mongoose.Types.ObjectId).toString()
+    );
+
+    bill.currentPayment -= payment.amount;
+
+    if (bill.currentPayment < bill.totalAmount) {
+      bill.status = "Unpaid";
+    }
+
+    await bill.save({ session });
+    await Payment.deleteOne({ _id: payment._id }, { session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    console.log(`User:${req.userId} successfully deleted payment with ID:${paymentId}`);
+    res.status(200).json({
+      success: true,
+      data: bill,
+    });
+  } catch (error: any) {
+    await session.abortTransaction();
+    session.endSession();
+    console.log(`User:${req.userId} failed to delete payment with ID:${req.params.paymentId} with error:${error}`);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
