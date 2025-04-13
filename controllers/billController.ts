@@ -186,7 +186,7 @@ export const addBillPayement = async (req: Request, res: Response) => {
     console.log(`User:${req.userId} successfully added payment to bill with ID:${req.params.id} with amount:${amount}`)
     res.status(200).json({
       success: true,
-      data: bill,
+      data: {},
     })
   } catch (error: any) {
     await session.abortTransaction()
